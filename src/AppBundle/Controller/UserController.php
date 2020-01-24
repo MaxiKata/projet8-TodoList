@@ -2,6 +2,7 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Repository\UserRepository;
 use AppBundle\Entity\User;
 use AppBundle\Form\UserType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -28,10 +29,16 @@ class UserController extends Controller
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isValid() && $form->isSubmitted()) {
             $em = $this->getDoctrine()->getManager();
             $password = $this->get('security.password_encoder')->encodePassword($user, $user->getPassword());
             $user->setPassword($password);
+
+            $result = $this->checkUser($user->getUsername());
+            if($result == true){
+                $this->addFlash('error', "Ce nom d'utilisateur existe déjà");
+                return $this->render('user/create.html.twig', ['form' => $form->createView()]);
+            }
 
             $em->persist($user);
             $em->flush();
@@ -65,5 +72,21 @@ class UserController extends Controller
         }
 
         return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
+    }
+
+    /**
+     *
+     */
+    private function checkUser($username)
+    {
+        $result = $this->getDoctrine()->getRepository(User::class)->findOneBy(['username' => $username]);
+
+        if(!empty($result)){
+            //$this->addFlash('danger', "Ce nom d'utilisateur existe déjà");
+
+            return true;
+        }
+
+        return false;
     }
 }
