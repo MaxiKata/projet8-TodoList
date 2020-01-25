@@ -56,37 +56,42 @@ class UserController extends Controller
      */
     public function editAction(User $user, Request $request)
     {
-        $form = $this->createForm(UserType::class, $user);
+        $userConnected = $this->get('security.token_storage')->getToken()->getUser();
 
-        $form->handleRequest($request);
+        if($userConnected == $user or $userConnected->getRoles()[0] == "ROLE_ADMIN") {
+            $form = $this->createForm(UserType::class, $user);
 
-        if ($form->isValid()) {
-            $password = $this->get('security.password_encoder')->encodePassword($user, $user->getPassword());
-            $user->setPassword($password);
+            $form->handleRequest($request);
 
-            $this->getDoctrine()->getManager()->flush();
+            if ($form->isValid()) {
+                $password = $this->get('security.password_encoder')->encodePassword($user, $user->getPassword());
+                $user->setPassword($password);
 
-            $this->addFlash('success', "L'utilisateur a bien été modifié");
+                $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('user_list');
+                $this->addFlash('success', "L'utilisateur a bien été modifié");
+
+                return $this->redirectToRoute('user_list');
+            }
+
+            return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
         }
+        $this->addFlash('error', "Vous n'êtes pas autorisés à accèder à cette page");
 
-        return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
+        return $this->redirectToRoute('user_list');
     }
 
     /**
-     *
+     * @param $username
+     * @return bool
      */
     private function checkUser($username)
     {
         $result = $this->getDoctrine()->getRepository(User::class)->findOneBy(['username' => $username]);
 
         if(!empty($result)){
-            //$this->addFlash('danger', "Ce nom d'utilisateur existe déjà");
-
             return true;
         }
-
         return false;
     }
 }
