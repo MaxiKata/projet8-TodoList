@@ -16,3 +16,4 @@
 /web/bundles/
 app/config/config.yml
 *.idea
+*.DS_Store
