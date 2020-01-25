@@ -27,7 +27,7 @@
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
                         <td>
-                            <a href="{{ path('user_edit', {'id' : user.id}) }}" class="btn btn-success btn-sm">Edit</a>
+                            <a href="{% if app.user.roles.0 == 'ROLE_ADMIN' or user == app.user %}{{ path('user_edit', {'id' : user.id}) }}{% else %}#{% endif %}" class="btn btn-success btn-sm"{% if app.user.roles.0 == 'ROLE_ADMIN' %}{% elseif user != app.user %} disabled {% endif %}>Edit</a>
                         </td>
                     </tr>
                 {% endfor %}
