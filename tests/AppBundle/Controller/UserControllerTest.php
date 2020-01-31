@@ -32,7 +32,7 @@ class UserControllerTest extends WebTestCase
     public function testGetCreateUserPage()
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/users/create');
+        $client->request('GET', '/users/create');
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
     }
 
@@ -61,7 +61,7 @@ class UserControllerTest extends WebTestCase
         $form['user[email]'] = 'userTest@test.com';
         $form['user[roles]'] = 'ROLE_USER';
         // submit the form
-        $crawler = $client->submit($form);
+        $client->submit($form);
         // Test
         $this->assertTrue($client->getResponse()->isRedirect());
     }
@@ -171,7 +171,7 @@ class UserControllerTest extends WebTestCase
 
 
         $uri = "/users/$userId/edit"; // Dynamic url for test
-        $crawler = $this->client->request('GET', $uri); // Call the edit page
+        $this->client->request('GET', $uri); // Call the edit page
         static::assertEquals(302, $this->client->getResponse()->getStatusCode());
         $crawler = $this->client->followRedirect();
 
@@ -183,7 +183,7 @@ class UserControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $crawler = $client->request('GET', '/users');
+        $client->request('GET', '/users');
 
         $this->assertSame(302, $client->getResponse()->getStatusCode());
     }
