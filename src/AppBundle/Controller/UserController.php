@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Repository\UserRepository;
 use AppBundle\Entity\User;
 use AppBundle\Form\UserType;
+use Doctrine\Common\Persistence\ObjectManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,7 @@ class UserController extends Controller
      */
     public function listAction()
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         return $this->render('user/list.html.twig', ['users' => $this->getDoctrine()->getRepository('AppBundle:User')->findAll()]);
     }
 
