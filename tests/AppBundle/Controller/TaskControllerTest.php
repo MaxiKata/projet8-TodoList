@@ -314,7 +314,7 @@ class TaskControllerTest extends WebTestCase
     {
         $user = $this->createUser('ROLE_USER');
 
-        $task = $this->createTask($user);
+        $this->createTask($user);
 
         $this->logInUser();
 
