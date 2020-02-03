@@ -172,7 +172,7 @@ class UserControllerTest extends WebTestCase
 
         $uri = "/users/$userId/edit"; // Dynamic url for test
         $this->client->request('GET', $uri); // Call the edit page
-        static::assertEquals(302, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(302, $this->client->getResponse()->getStatusCode());
         $crawler = $this->client->followRedirect();
 
         $this->assertSame(1, $crawler->filter('div.alert.alert-danger')->count());
