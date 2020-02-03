@@ -15,7 +15,23 @@ class TaskController extends Controller
      */
     public function listAction()
     {
-        return $this->render('task/list.html.twig', ['tasks' => $this->getDoctrine()->getRepository('AppBundle:Task')->findAll()]);
+        if($this->checkConnection() == true){
+            return $this->render('task/list.html.twig', ['tasks' => $this->getDoctrine()->getRepository('AppBundle:Task')->findAll()]);
+        }
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
+    }
+
+    /**
+     * @Route("/tasks/done", name="task_list_done")
+     */
+    public function listDoneAction()
+    {
+        if($this->checkConnection() == true){
+            return $this->render('task/listDone.html.twig', ['tasks' => $this->getDoctrine()->getRepository('AppBundle:Task')->findAll()]);
+        }
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
     }
 
     /**
@@ -23,29 +39,30 @@ class TaskController extends Controller
      */
     public function createAction(Request $request)
     {
-        if (!$this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
-            throw $this->createAccessDeniedException();
+        if($this->checkConnection() == true){
+            $task = new Task();
+            $form = $this->createForm(TaskType::class, $task);
+
+            $form->handleRequest($request);
+
+            if ($form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+
+                // ******** Add User link with a task ******** //
+                $task->setUser($this->get('security.token_storage')->getToken()->getUser());
+
+                $em->persist($task);
+                $em->flush();
+
+                $this->addFlash('success', 'La tâche a été bien été ajoutée.');
+
+                return $this->redirectToRoute('task_list');
+            }
+
+            return $this->render('task/create.html.twig', ['form' => $form->createView()]);
         }
-        $task = new Task();
-        $form = $this->createForm(TaskType::class, $task);
-
-        $form->handleRequest($request);
-
-        if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-
-            // ******** Add User link with a task ******** //
-            $task->setUser($this->get('security.token_storage')->getToken()->getUser());
-
-            $em->persist($task);
-            $em->flush();
-
-            $this->addFlash('success', 'La tâche a été bien été ajoutée.');
-
-            return $this->redirectToRoute('task_list');
-        }
-
-        return $this->render('task/create.html.twig', ['form' => $form->createView()]);
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
     }
 
     /**
@@ -53,28 +70,32 @@ class TaskController extends Controller
      */
     public function editAction(Task $task, Request $request)
     {
-        $user = $this->get('security.token_storage')->getToken()->getUser();
-        if($user == $task->getUser() or $user->getRoles()[0] == "ROLE_ADMIN"){
-            $form = $this->createForm(TaskType::class, $task);
+        if($this->checkConnection() == true){
+            $user = $this->get('security.token_storage')->getToken()->getUser();
+            if($user == $task->getUser() or $user->getRoles()[0] == "ROLE_ADMIN"){
+                $form = $this->createForm(TaskType::class, $task);
 
-            $form->handleRequest($request);
+                $form->handleRequest($request);
 
-            if ($form->isValid()) {
-                $this->getDoctrine()->getManager()->flush();
+                if ($form->isValid()) {
+                    $this->getDoctrine()->getManager()->flush();
 
-                $this->addFlash('success', 'La tâche a bien été modifiée.');
+                    $this->addFlash('success', 'La tâche a bien été modifiée.');
 
-                return $this->redirectToRoute('task_list');
+                    return $this->redirectToRoute('task_list');
+                }
+
+                return $this->render('task/edit.html.twig', [
+                    'form' => $form->createView(),
+                    'task' => $task,
+                ]);
             }
+            $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
 
-            return $this->render('task/edit.html.twig', [
-                'form' => $form->createView(),
-                'task' => $task,
-            ]);
+            return $this->redirectToRoute('task_list');
         }
         $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
-
-        return $this->redirectToRoute('task_list');
+        return $this->redirectToRoute('login');
     }
 
     /**
@@ -82,12 +103,33 @@ class TaskController extends Controller
      */
     public function toggleTaskAction(Task $task)
     {
-        $task->toggle(!$task->isDone());
-        $this->getDoctrine()->getManager()->flush();
+        if($this->checkConnection() == true){
+            $task->toggle(!$task->isDone());
+            $this->getDoctrine()->getManager()->flush();
 
-        $this->addFlash('success', sprintf('La tâche %s a bien été marquée comme faite.', $task->getTitle()));
+            $this->addFlash('success', sprintf('La tâche %s a bien été marquée comme faite.', $task->getTitle()));
 
-        return $this->redirectToRoute('task_list');
+            return $this->redirectToRoute('task_list');
+        }
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
+    }
+
+    /**
+     * @Route("/tasks/{id}/toggleCancel", name="task_toggle_cancel")
+     */
+    public function toggleCancelTaskAction(Task $task)
+    {
+        if($this->checkConnection() == true){
+            $task->toggle(!$task->isDone());
+            $this->getDoctrine()->getManager()->flush();
+
+            $this->addFlash('success', sprintf('La tâche %s a bien été marquée comme à faire', $task->getTitle()));
+
+            return $this->redirectToRoute('task_list_done');
+        }
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
     }
 
     /**
@@ -95,18 +137,33 @@ class TaskController extends Controller
      */
     public function deleteTaskAction(Task $task)
     {
-        $user = $this->get('security.token_storage')->getToken()->getUser();
-        if($user == $task->getUser() or $user->getRoles()[0] == "ROLE_ADMIN") {
-            $em = $this->getDoctrine()->getManager();
-            $em->remove($task);
-            $em->flush();
+        if($this->checkConnection() == true){
+            $user = $this->get('security.token_storage')->getToken()->getUser();
+            if($user == $task->getUser() or $user->getRoles()[0] == "ROLE_ADMIN") {
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($task);
+                $em->flush();
 
-            $this->addFlash('success', 'La tâche a bien été supprimée.');
+                $this->addFlash('success', 'La tâche a bien été supprimée.');
+
+                return $this->redirectToRoute('task_list');
+            }
+            $this->addFlash('error', "Vous n'êtes pas autorisé à effectuer cette action");
 
             return $this->redirectToRoute('task_list');
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à effectuer cette action");
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
+    }
 
-        return $this->redirectToRoute('task_list');
+    /**
+     * @return bool
+     */
+    private function checkConnection()
+    {
+        if (!$this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return false;
+        }
+        return true;
     }
 }
