@@ -7,25 +7,22 @@ use AppBundle\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 trait CreateTrait
 {
     private $client;
 
     /**
-     * @param $role
-     * @return User
-     * @throws \Exception
+     *
      */
     public function createUser($role)
     {
-        $user = new User();
-        $user->setUsername('user' . random_int(1,10000));
-        $user->setEmail($user->getUsername() . '@example.com');
+        $user = new User;
+        $user->setUsername('user'.random_int(1, 10000));
+        $user->setEmail('email'.random_int(1, 10000).'@example.com');
         $user->setRoles($role);
-        $passwordEncoder = $this->getSecurityPasswordEncoder();
-        $passwordEncode = $passwordEncoder->encodePassword($user, 'hihi');
-        $user->setPassword($passwordEncode);
+        $user->setPassword('hihi');
         $this->client->getContainer()->get('doctrine.orm.entity_manager')->persist($user);
         $this->client->getContainer()->get('doctrine.orm.entity_manager')->flush();
         return $user;
