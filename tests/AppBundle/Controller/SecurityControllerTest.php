@@ -54,11 +54,7 @@ class SecurityControllerTest extends WebTestCase
 
         $client->click($link);
 
-        //Test 1st redirection
-        $this->assertTrue($client->getResponse()->isRedirect());
-        $client->followRedirect();
-
-        //Test 2nd redirection
+        //Test redirection
         $this->assertTrue($client->getResponse()->isRedirect());
         $crawler = $client->followRedirect();
 
@@ -88,11 +84,7 @@ class SecurityControllerTest extends WebTestCase
 
         $client->request('GET', '/logout');
 
-        //Test 1st redirection
-        $this->assertTrue($client->getResponse()->isRedirect());
-        $client->followRedirect();
-
-        //Test 2nd redirection
+        //Test redirection
         $this->assertTrue($client->getResponse()->isRedirect());
         $crawler = $client->followRedirect();
 

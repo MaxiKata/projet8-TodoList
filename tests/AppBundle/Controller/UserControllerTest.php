@@ -131,6 +131,28 @@ class UserControllerTest extends WebTestCase
     /**
      * Test de modification d'un utilisateur par un administrateur ROLE_ADMIN
      */
+    public function testEditUsernotConnected()
+    {
+        $client = static::createClient();
+
+        // Getting all tasks
+        $users = $this->em->getRepository(User::class)->findAll();
+        $userId = $users[0]->getId();
+
+        // Request the route
+        $uri = "/users/$userId/edit"; // Dynamic url for test
+        $client->request('GET', $uri); // Request the route
+        $this->assertSame(302, $client->getResponse()->getStatusCode());
+        $this->assertTrue($client->getResponse()->isRedirect());
+        $crawler = $client->followRedirect();
+
+        //Test
+        $this->assertSame(1, $crawler->filter('.alert-danger:contains("Vous n\'êtes pas autorisé à accèder à cette page")')->count());
+    }
+
+    /**
+     * Test de modification d'un utilisateur par un administrateur ROLE_ADMIN
+     */
     public function testEditUserByAdmin()
     {
         $this->logInAdmin();

@@ -1,0 +1,13 @@
+# This file is auto-generated during the composer install
+parameters:
+  locale: en
+  database_host: localhost
+  database_port: 8000
+  database_name: projet8-TodoList-test
+  database_user: root
+  database_password: password
+  mailer_transport: smtp
+  mailer_host: localhost
+  mailer_user: null
+  mailer_password: null
+  secret: ThisTokenIsNotSoSecretChangeIt
