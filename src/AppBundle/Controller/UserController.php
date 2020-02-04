@@ -17,8 +17,11 @@ class UserController extends Controller
      */
     public function listAction()
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        return $this->render('user/list.html.twig', ['users' => $this->getDoctrine()->getRepository('AppBundle:User')->findAll()]);
+        if($this->checkConnection() == true){
+            return $this->render('user/list.html.twig', ['users' => $this->getDoctrine()->getRepository('AppBundle:User')->findAll()]);
+        }
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
     }
 
     /**
@@ -49,7 +52,6 @@ class UserController extends Controller
 
             return $this->redirectToRoute('user_list');
         }
-
         return $this->render('user/create.html.twig', ['form' => $form->createView()]);
     }
 
@@ -58,29 +60,33 @@ class UserController extends Controller
      */
     public function editAction(User $user, Request $request)
     {
-        $userConnected = $this->get('security.token_storage')->getToken()->getUser();
+        if($this->checkConnection() == true){
+            $userConnected = $this->get('security.token_storage')->getToken()->getUser();
 
-        if($userConnected == $user or $userConnected->getRoles()[0] == "ROLE_ADMIN") {
-            $form = $this->createForm(UserType::class, $user);
+            if($userConnected == $user or $userConnected->getRoles()[0] == "ROLE_ADMIN") {
+                $form = $this->createForm(UserType::class, $user);
 
-            $form->handleRequest($request);
+                $form->handleRequest($request);
 
-            if ($form->isValid()) {
-                $password = $this->get('security.password_encoder')->encodePassword($user, $user->getPassword());
-                $user->setPassword($password);
+                if ($form->isValid()) {
+                    $password = $this->get('security.password_encoder')->encodePassword($user, $user->getPassword());
+                    $user->setPassword($password);
 
-                $this->getDoctrine()->getManager()->flush();
+                    $this->getDoctrine()->getManager()->flush();
 
-                $this->addFlash('success', "L'utilisateur a bien été modifié");
+                    $this->addFlash('success', "L'utilisateur a bien été modifié");
 
-                return $this->redirectToRoute('user_list');
+                    return $this->redirectToRoute('user_list');
+                }
+
+                return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
             }
+            $this->addFlash('error', "Vous n'êtes pas autorisés à accèder à cette page");
 
-            return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
+            return $this->redirectToRoute('user_list');
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisés à accèder à cette page");
-
-        return $this->redirectToRoute('user_list');
+        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        return $this->redirectToRoute('login');
     }
 
     /**
@@ -95,5 +101,17 @@ class UserController extends Controller
             return true;
         }
         return false;
+    }
+
+
+    /**
+     * @return bool
+     */
+    private function checkConnection()
+    {
+        if (!$this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return false;
+        }
+        return true;
     }
 }

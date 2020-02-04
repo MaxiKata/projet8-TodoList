@@ -1,5 +1,6 @@
 imports:
     - { resource: config_dev.yml }
+    - { resource: parameters_test.yml }
 
 framework:
     test: ~
@@ -17,6 +18,22 @@ security:
         # replace 'main' by the name of your own firewall
         main:
             http_basic: ~
+
+doctrine:
+    dbal:
+        driver:   pdo_mysql
+        host:     "%database_host%"
+        port:     "%database_port%"
+        dbname:   "%database_name%"
+        user:     "%database_user%"
+        password: "%database_password%"
+        charset:  UTF8
+        # if using pdo_sqlite as your database driver:
+        #   1. add the path in parameters.yml
+        #     e.g. database_path: "%kernel.root_dir%/data/data.db3"
+        #   2. Uncomment database_path in parameters.yml.dist
+        #   3. Uncomment next line:
+        #     path:     "%database_path%"
 
 swiftmailer:
     disable_delivery: true
