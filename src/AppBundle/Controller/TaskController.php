@@ -10,15 +10,18 @@ use Symfony\Component\HttpFoundation\Request;
 
 class TaskController extends Controller
 {
+    private $error = "Vous n'êtes pas autorisé à accèder à cette page";
+
     /**
      * @Route("/tasks", name="task_list")
      */
     public function listAction()
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             return $this->render('task/list.html.twig', ['tasks' => $this->getDoctrine()->getRepository('AppBundle:Task')->findAll()]);
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
@@ -27,10 +30,11 @@ class TaskController extends Controller
      */
     public function listDoneAction()
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             return $this->render('task/listDone.html.twig', ['tasks' => $this->getDoctrine()->getRepository('AppBundle:Task')->findAll()]);
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
@@ -39,6 +43,7 @@ class TaskController extends Controller
      */
     public function createAction(Request $request)
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             $task = new Task();
             $form = $this->createForm(TaskType::class, $task);
@@ -61,7 +66,7 @@ class TaskController extends Controller
 
             return $this->render('task/create.html.twig', ['form' => $form->createView()]);
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
@@ -70,8 +75,11 @@ class TaskController extends Controller
      */
     public function editAction(Task $task, Request $request)
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             $user = $this->get('security.token_storage')->getToken()->getUser();
+
+            // check si l'utilisateur authentifié est le propriétaire de la tâche ou est ADMIN
             if($user == $task->getUser() or $user->getRoles()[0] == "ROLE_ADMIN"){
                 $form = $this->createForm(TaskType::class, $task);
 
@@ -80,7 +88,7 @@ class TaskController extends Controller
                 if ($form->isValid()) {
                     $this->getDoctrine()->getManager()->flush();
 
-                    $this->addFlash('success', 'La tâche a bien été modifiée.');
+                    $this->addFlash('success', sprintf('La tâche %s a bien été modifiée.', $task->getTitle()));
 
                     return $this->redirectToRoute('task_list');
                 }
@@ -90,11 +98,11 @@ class TaskController extends Controller
                     'task' => $task,
                 ]);
             }
-            $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+            $this->addFlash('error', $this->error);
 
             return $this->redirectToRoute('task_list');
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
@@ -103,6 +111,7 @@ class TaskController extends Controller
      */
     public function toggleTaskAction(Task $task)
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             $task->toggle(!$task->isDone());
             $this->getDoctrine()->getManager()->flush();
@@ -111,7 +120,7 @@ class TaskController extends Controller
 
             return $this->redirectToRoute('task_list');
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
@@ -120,6 +129,7 @@ class TaskController extends Controller
      */
     public function toggleCancelTaskAction(Task $task)
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             $task->toggle(!$task->isDone());
             $this->getDoctrine()->getManager()->flush();
@@ -128,7 +138,7 @@ class TaskController extends Controller
 
             return $this->redirectToRoute('task_list_done');
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
@@ -137,8 +147,11 @@ class TaskController extends Controller
      */
     public function deleteTaskAction(Task $task)
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             $user = $this->get('security.token_storage')->getToken()->getUser();
+
+            // check si l'utilisateur authentifié est le propriétaire de la tâche ou est ADMIN
             if($user == $task->getUser() or $user->getRoles()[0] == "ROLE_ADMIN") {
                 $em = $this->getDoctrine()->getManager();
                 $em->remove($task);
@@ -148,11 +161,11 @@ class TaskController extends Controller
 
                 return $this->redirectToRoute('task_list');
             }
-            $this->addFlash('error', "Vous n'êtes pas autorisé à effectuer cette action");
+            $this->addFlash('error', $this->error);
 
             return $this->redirectToRoute('task_list');
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
