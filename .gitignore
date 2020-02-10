@@ -17,3 +17,4 @@
 app/config/config.yml
 *.idea
 *.DS_Store
+app/config/parameters_test.yml

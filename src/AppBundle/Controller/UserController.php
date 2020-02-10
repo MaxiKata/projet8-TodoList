@@ -12,15 +12,18 @@ use Symfony\Component\HttpFoundation\Request;
 
 class UserController extends Controller
 {
+    private $error = "Vous n'êtes pas autorisé à accèder à cette page";
+
     /**
      * @Route("/users", name="user_list")
      */
     public function listAction()
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             return $this->render('user/list.html.twig', ['users' => $this->getDoctrine()->getRepository('AppBundle:User')->findAll()]);
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
@@ -60,9 +63,11 @@ class UserController extends Controller
      */
     public function editAction(User $user, Request $request)
     {
+        // check si l'utilisateur est authentifié
         if($this->checkConnection() == true){
             $userConnected = $this->get('security.token_storage')->getToken()->getUser();
 
+            // check si l'utilisateur authentifié est le même que celui a édité ou est ADMIN
             if($userConnected == $user or $userConnected->getRoles()[0] == "ROLE_ADMIN") {
                 $form = $this->createForm(UserType::class, $user);
 
@@ -81,11 +86,11 @@ class UserController extends Controller
 
                 return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
             }
-            $this->addFlash('error', "Vous n'êtes pas autorisés à accèder à cette page");
+            $this->addFlash('error', $this->error);
 
             return $this->redirectToRoute('user_list');
         }
-        $this->addFlash('error', "Vous n'êtes pas autorisé à accèder à cette page");
+        $this->addFlash('error', $this->error);
         return $this->redirectToRoute('login');
     }
 
