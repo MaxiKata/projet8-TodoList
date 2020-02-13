@@ -14,11 +14,11 @@ Project made with Symfony 3.4.
 
 ### 2 - Install the project
 1 - Clone or download the GitHub repository in the desired folder:
-```
+```alpha
     git clone https://github.com/MaxiKata/projet8-TodoList.git
 ```
 2 - Install libraries by running : 
-```
+```alpha
     composer install
 ```
 
@@ -26,7 +26,7 @@ Project made with Symfony 3.4.
 
 1 - Database of the application
 **=>** Modify file, app/config/parameters.yml :
-```
+```alpha
   database_host: localhost
   database_port: 8000
   database_name: projet8-TodoList
@@ -36,7 +36,7 @@ Project made with Symfony 3.4.
 
 2 - Database of the TEST for the application
 **=>** Modify file, app/config/parameters_test.yml :
-```
+```alpha
   database_host: localhost
   database_port: 8000
   database_name: projet8-TodoList-test
@@ -47,13 +47,13 @@ Project made with Symfony 3.4.
 ### 4 - Install Databases
 
 1 - Command to create & launch database of the application:
-```
+```alpha
     php bin/console doctrine:database:create
     php bin/console doctrine:schema:update --force
 ```
 
 2 - Command to create for database of the TEST for the application:
-```
+```alpha
     php bin/console doctrine:database:create --env=test
     php bin/console doctrine:schema:update --env=test
 ```
@@ -62,11 +62,11 @@ Project made with Symfony 3.4.
 
 1 - Command to launch:
 
-```
+```alpha
     php bin:console server:run
 ```
 Or
-```
+```alpha
     symfony server:start
 ```
 
