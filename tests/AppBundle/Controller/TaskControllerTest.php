@@ -331,7 +331,7 @@ class TaskControllerTest extends WebTestCase
         $crawler = $this->client->followRedirect();
 
         //Test
-        $this->assertSame(1, $crawler->filter('.alert-danger:contains("Vous n\'êtes pas autorisé à effectuer cette action")')->count());
+        $this->assertSame(1, $crawler->filter('.alert-danger:contains("Vous n\'êtes pas autorisé à accèder à cette page")')->count());
     }
 
     /**

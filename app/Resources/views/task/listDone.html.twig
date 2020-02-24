@@ -3,8 +3,11 @@
 {% block header_img %}<img class="slide-image" src="{{ asset('img/todolist_content.jpg') }}" alt="todo list">{% endblock %}
 
 {% block body %}
-    <a href="{{ path('task_create') }}" class="btn btn-info pull-right">Créer une tâche</a>
+    <div style="width: 100%; height: 34px; margin-bottom: 5px;">
+        <a href="{{ path('task_create')}}" class="btn btn-info pull-right">Créer une tâche</a>
+    </div>
     <div class="row">
+        {% set i = 1 %}
         {% for task in tasks %}
             {% if task.isDone %}
                 <div class="col-sm-4 col-lg-4 col-md-4">
@@ -31,11 +34,12 @@
                         </div>
                     </div>
                 </div>
-            {% elseif task.isDone %}
-            {% else %}
+            {% elseif loop.length - i == 0 %}
                 <div class="alert alert-warning" role="alert">
                     Il n'y a pas encore de tâche enregistrée. <a href="{{ path('task_create') }}" class="btn btn-warning pull-right">Créer une tâche</a>
                 </div>
+            {% else%}
+                {% set i = i + 1 %}
             {% endif %}
         {% endfor %}
     </div>
