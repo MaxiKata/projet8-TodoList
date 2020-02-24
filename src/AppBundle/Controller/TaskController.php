@@ -88,7 +88,7 @@ class TaskController extends Controller
                 if ($form->isValid()) {
                     $this->getDoctrine()->getManager()->flush();
 
-                    $this->addFlash('success', sprintf('La tâche %s a bien été modifiée.', $task->getTitle()));
+                    $this->addFlash('success', 'La tâche a bien été modifiée');
 
                     return $this->redirectToRoute('task_list');
                 }
